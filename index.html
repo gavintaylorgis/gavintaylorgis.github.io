@@ -9,10 +9,14 @@
         <link rel="stylesheet" href="css/leaflet.css">
         <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
         <style>
-        #map {
-            width: 1608px;
-            height: 907px;
-        }
+        body {
+            padding: 0;
+            margin: 0;
+            }
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+            }
         </style>
         <title></title>
     </head>
@@ -107,33 +111,33 @@
         function pop_Photos_2(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
-                        <th scope="row">filename</th>\
+                        <th scope="row">Image Name</th>\
                         <td>' + (feature.properties['filename'] !== null ? autolinker.link(feature.properties['filename'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
-                        <th scope="row">my_url</th>\
+                        <th scope="row">GDrive URL</th>\
                         <td>' + (feature.properties['my_url'] !== null ? autolinker.link(feature.properties['my_url'].toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
                         <td colspan="2">' + (feature.properties['url_text2'] !== null ? autolinker.link(feature.properties['url_text2'].toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
+            layer.bindPopup(popupContent, {maxHeight: 400, maxWidth: 351});
         }
 
         function style_Photos_2_0() {
             return {
                 pane: 'pane_Photos_2',
-                radius: 2.8,
+                radius: 5,
                 opacity: 1,
-                color: 'rgba(35,35,35,1.0)',
+                color: 'rgba(50,87,123,1.0)',
                 dashArray: '',
                 lineCap: 'butt',
                 lineJoin: 'miter',
                 weight: 1,
                 fill: true,
                 fillOpacity: 1,
-                fillColor: 'rgba(255,0,0,1.0)',
+                fillColor: 'rgba(72,123,182,1.0)',
                 interactive: true,
             }
         }
