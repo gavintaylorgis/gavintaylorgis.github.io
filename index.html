@@ -1,169 +1,125 @@
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
-        <meta name="mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <link rel="stylesheet" href="css/leaflet.css">
-        <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
-        <style>
-        body {
-            padding: 0;
-            margin: 0;
-            }
-        html, body, #map {
-            height: 100%;
-            width: 100%;
-            }
-        </style>
-        <title></title>
-    </head>
-    <body>
-        <div id="map">
-        </div>
-        <script src="js/qgis2web_expressions.js"></script>
-        <script src="js/leaflet.js"></script>
-        <script src="js/leaflet.rotatedMarker.js"></script>
-        <script src="js/leaflet.pattern.js"></script>
-        <script src="js/leaflet-hash.js"></script>
-        <script src="js/Autolinker.min.js"></script>
-        <script src="js/rbush.min.js"></script>
-        <script src="js/labelgun.min.js"></script>
-        <script src="js/labels.js"></script>
-        <script src="data/AreasofInteres_1.js"></script>
-        <script src="data/Photos_2.js"></script>
-        <script>
-        var map = L.map('map', {
-            zoomControl:true, maxZoom:28, minZoom:1
-        }).fitBounds([[-8.318886875605378,38.38258460979656],[-7.703663442645633,39.474351276463246]]);
-        var hash = new L.Hash(map);
-        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
-        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
-        var bounds_group = new L.featureGroup([]);
-        function setBounds() {
-        }
-        map.createPane('pane_GoogleSatellite_0');
-        map.getPane('pane_GoogleSatellite_0').style.zIndex = 400;
-        var layer_GoogleSatellite_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-            pane: 'pane_GoogleSatellite_0',
-            opacity: 1.0,
-            attribution: '',
-            minZoom: 1,
-            maxZoom: 28,
-            minNativeZoom: 0,
-            maxNativeZoom: 19
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mapbox with XYZ Tile Layers</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
+    <style>
+
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; z-index: 0; }
+        .layer-toggle-container { position: absolute; top: 10px; left: 10px; z-index: 1; }
+        .layer-toggle-container button { margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoiZ2F2aW50YXlsb3IxMjMiLCJhIjoiY2xpOXd5aXp5Mjc1ZTNubnc1ZDlqeXdieiJ9.z48pLx9Ihuh_YxKGWxtnCg'; // Replace with your Mapbox access token
+
+        navigator.geolocation.getCurrentPosition(successLocation, errorLocation, {
+            enableHighAccuracy: true
         });
-        layer_GoogleSatellite_0;
-        map.addLayer(layer_GoogleSatellite_0);
-        function pop_AreasofInteres_1(feature, layer) {
-            var popupContent = '<table>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['fid'] !== null ? autolinker.link(feature.properties['fid'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['Zone Name'] !== null ? autolinker.link(feature.properties['Zone Name'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['Name'] !== null ? autolinker.link(feature.properties['Name'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['area'] !== null ? autolinker.link(feature.properties['area'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(feature.properties['id'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['layer'] !== null ? autolinker.link(feature.properties['layer'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['path'] !== null ? autolinker.link(feature.properties['path'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400});
+
+        function successLocation(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            const map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/satellite-v9',
+                center: [longitude, latitude],
+                zoom: 12
+            });
+
+            // Add the user's location marker to the map
+            const marker = new mapboxgl.Marker()
+                .setLngLat([longitude, latitude])
+                .addTo(map);
+
+            // Add XYZ tile layers to the map
+            const xyzLayers = [
+                {
+                    id: 'xyz-layer1',
+                    name: 'Cane Rows',
+                    url: 'https://tiles-cdn.koordinates.com/services;key=aee9d07062844b91ae3e091154b223b8/tiles/v4/layer=113771/EPSG:3857/{z}/{x}/{y}.png'
+                },
+                {
+                    id: 'xyz-layer2',
+                    name: 'Crop Height',
+                    url: 'https://tiles-cdn.koordinates.com/services;key=aee9d07062844b91ae3e091154b223b8/tiles/v4/layer=113768/EPSG:3857/{z}/{x}/{y}.png'
+                },
+                {
+                    id: 'xyz-layer3',
+                    name: 'DSM',
+                    url: 'https://tiles-cdn.koordinates.com/services;key=aee9d07062844b91ae3e091154b223b8/tiles/v4/layer=113769/EPSG:3857/{z}/{x}/{y}.png'
+                },
+                {
+                    id: 'xyz-layer4',
+                    name: 'RGB',
+                    url: 'https://tiles-cdn.koordinates.com/services;key=aee9d07062844b91ae3e091154b223b8/tiles/v4/layer=113767/EPSG:3857/{z}/{x}/{y}.png'
+                },
+                {
+                    id: 'xyz-layer5',
+                    name: 'Gap Points',
+                    url: 'https://tiles-cdn.koordinates.com/services;key=aee9d07062844b91ae3e091154b223b8/tiles/v4/layer=113775/EPSG:3857/{z}/{x}/{y}.png'
+                }
+            ];
+
+            xyzLayers.forEach(layer => {
+                map.on('load', () => {
+                    map.addSource(layer.id, {
+                        type: 'raster',
+                        tiles: [layer.url],
+                        tileSize: 256
+                    });
+
+                    map.addLayer({
+                        id: layer.id,
+                        type: 'raster',
+                        source: layer.id,
+                        paint: {
+                            'raster-opacity': 0.7
+                        },
+                        layout: {
+                            visibility: 'none'
+                        }
+                    });
+                });
+            });
+
+              // Add layer toggle buttons
+            const layerToggleContainer = document.createElement('div');
+            layerToggleContainer.className = 'layer-toggle-container';
+            document.body.appendChild(layerToggleContainer);
+
+            xyzLayers.forEach(layer => {
+                const layerToggle = document.createElement('button');
+                layerToggle.textContent = layer.name;
+                layerToggle.addEventListener('click', () => {
+                    const visibility = map.getLayoutProperty(layer.id, 'visibility');
+                    if (visibility === 'none') {
+                        map.setLayoutProperty(layer.id, 'visibility', 'visible');
+                    } else {
+                        map.setLayoutProperty(layer.id, 'visibility', 'none');
+                    }
+                });
+                layerToggleContainer.appendChild(layerToggle);
+            });
+            
         }
 
-        function style_AreasofInteres_1_0() {
-            return {
-                pane: 'pane_AreasofInteres_1',
-                stroke: false, 
-                fill: true,
-                fillOpacity: 0.4,
-                fillColor: 'rgba(148,209,128,0.4)',
-                interactive: true,
-            }
+        function errorLocation() {
+            const map = new mapboxgl.Map({
+                container: 'map',
+                style: 'mapbox://styles/mapbox/streets-v11',
+                center: [-74.5, 40], // Default center coordinates (New York City)
+                zoom: 12
+            });
         }
-        map.createPane('pane_AreasofInteres_1');
-        map.getPane('pane_AreasofInteres_1').style.zIndex = 401;
-        map.getPane('pane_AreasofInteres_1').style['mix-blend-mode'] = 'normal';
-        var layer_AreasofInteres_1 = new L.geoJson(json_AreasofInteres_1, {
-            attribution: '',
-            interactive: true,
-            dataVar: 'json_AreasofInteres_1',
-            layerName: 'layer_AreasofInteres_1',
-            pane: 'pane_AreasofInteres_1',
-            onEachFeature: pop_AreasofInteres_1,
-            style: style_AreasofInteres_1_0,
-        });
-        bounds_group.addLayer(layer_AreasofInteres_1);
-        map.addLayer(layer_AreasofInteres_1);
-        function pop_Photos_2(feature, layer) {
-            var popupContent = '<table>\
-                    <tr>\
-                        <th scope="row">Image Name</th>\
-                        <td>' + (feature.properties['filename'] !== null ? autolinker.link(feature.properties['filename'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <th scope="row">GDrive URL</th>\
-                        <td>' + (feature.properties['my_url'] !== null ? autolinker.link(feature.properties['my_url'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['url_text2'] !== null ? autolinker.link(feature.properties['url_text2'].toLocaleString()) : '') + '</td>\
-                    </tr>\
-                </table>';
-            layer.bindPopup(popupContent, {maxHeight: 400, maxWidth: 351});
-        }
-
-        function style_Photos_2_0() {
-            return {
-                pane: 'pane_Photos_2',
-                radius: 5,
-                opacity: 1,
-                color: 'rgba(50,87,123,1.0)',
-                dashArray: '',
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                weight: 1,
-                fill: true,
-                fillOpacity: 1,
-                fillColor: 'rgba(72,123,182,1.0)',
-                interactive: true,
-            }
-        }
-        map.createPane('pane_Photos_2');
-        map.getPane('pane_Photos_2').style.zIndex = 402;
-        map.getPane('pane_Photos_2').style['mix-blend-mode'] = 'normal';
-        var layer_Photos_2 = new L.geoJson(json_Photos_2, {
-            attribution: '',
-            interactive: true,
-            dataVar: 'json_Photos_2',
-            layerName: 'layer_Photos_2',
-            pane: 'pane_Photos_2',
-            onEachFeature: pop_Photos_2,
-            pointToLayer: function (feature, latlng) {
-                var context = {
-                    feature: feature,
-                    variables: {}
-                };
-                return L.circleMarker(latlng, style_Photos_2_0(feature));
-            },
-        });
-        bounds_group.addLayer(layer_Photos_2);
-        map.addLayer(layer_Photos_2);
-        var baseMaps = {};
-        L.control.layers(baseMaps,{'<img src="legend/Photos_2.png" /> Photos': layer_Photos_2,'<img src="legend/AreasofInteres_1.png" /> Areas of Interes': layer_AreasofInteres_1,"Google Satellite": layer_GoogleSatellite_0,}).addTo(map);
-        setBounds();
-        </script>
-    </body>
+    </script>
+</body>
 </html>
